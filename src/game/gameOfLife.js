@@ -7,6 +7,7 @@ const FPS = 60;
 const MAX_GRID_WIDTH = 100;
 const MAX_GRID_HEIGHT = 100;
 
+// Function to add point to grid
 let addPoint = null;
 
 export default function initGame() {
@@ -25,6 +26,7 @@ export default function initGame() {
   initGrid(cellGrid);
   initGrid(auxGrid);
 
+  // Initial position
   game.position.x = -WCELL * MAX_GRID_WIDTH / 2;
   game.position.y = -WCELL * MAX_GRID_HEIGHT / 2;
 
@@ -57,8 +59,6 @@ function update(grid, aux) {
 /*
  *  Input functions
  *
- *
- *
  */
 
 function handleKeyboard(event) {
@@ -80,20 +80,10 @@ function handleClick(event) {
 
   if(controls.getState().tool === 'PATTERN' && 
      controls.getState().pattern.item >= 0) {
-
-    const {page, item} = controls.getState().pattern;
-    const pattern = patterns[page][item];
-    const i0 = game.mouse.position.i;
-    const j0 = game.mouse.position.j;
-    const di = Math.floor(pattern.width / 2);
-    const dj = Math.floor(pattern.height / 2);
-
-    for(let i = 0; i < pattern.width; i++) {
-      for(let j = 0; j < pattern.height; j++) {
-        if(pattern.raw[i + j * pattern.width] === 'O')
-          addPoint(i0 + i - di, j0 + j - dj)
-      }
-    }
+      let {page, item} = controls.getState().pattern;
+      addPattern(patterns[page][item], 
+        game.mouse.position.i, 
+        game.mouse.position.j);
   }
 }
 
@@ -106,15 +96,24 @@ function handleMouse(event) {
       game.mouse.down = false;
       break;
     case 'mousemove':
-      [game.mouse.position.i, game.mouse.position.j] = calcPositionOnGrid(
-        event.layerX - event.target.width/2, event.layerY - event.target.height/2
-      )
-      if(game.mouse.down && controls.getState().tool === 'BRUSH')
-        addPoint(game.mouse.position.i, game.mouse.position.j);
-      if(game.mouse.down && controls.getState().tool === 'MOVE')
-        moveScreen(event.movementX / game.scale, event.movementY / game.scale);
+      onMouseMove(event);
       break;
   }
+}
+
+function onMouseMove(event) {
+  let mouseX = event.layerX - event.target.width/2;
+  let mouseY = event.layerY - event.target.height/2;
+  [game.mouse.position.i, 
+   game.mouse.position.j] = screenToGrid(mouseX, mouseY);
+
+  // Draw lines with points
+  if(game.mouse.down && controls.getState().tool === 'BRUSH')
+    addPoint(game.mouse.position.i, game.mouse.position.j);
+
+  // Move screen if mouse down
+  if(game.mouse.down && controls.getState().tool === 'MOVE')
+    moveScreen(event.movementX / game.scale, event.movementY / game.scale);
 }
 
 /*
@@ -122,7 +121,15 @@ function handleMouse(event) {
  *
  */
 
-function calcPositionOnGrid(x, y) {
+// Convert grid indices to context coords
+function gridToContext(i, j, ctx) { 
+  let x = (i * WCELL + game.position.x) * game.scale + ctx.canvas.width/2;
+  let y = (j * WCELL + game.position.y) * game.scale + ctx.canvas.height/2;
+  return [x, y]
+}
+
+// Convert screen coords to grid indices
+function screenToGrid(x, y) {
   let i = Math.floor((x / game.scale - game.position.x) / WCELL);
   let j = Math.floor((y / game.scale - game.position.y) / WCELL); 
   return [i, j];
@@ -131,6 +138,20 @@ function calcPositionOnGrid(x, y) {
 function moveScreen(dx, dy) {
   game.position.x += dx;
   game.position.y += dy;
+}
+
+function addPattern(pattern, i0, j0) {
+  // Calc middle point of pattern
+  const di = Math.floor(pattern.width / 2);
+  const dj = Math.floor(pattern.height / 2);
+
+  // Interprete pattern on pattern.raw and insert it on grid
+  for(let i = 0; i < pattern.width; i++) {
+    for(let j = 0; j < pattern.height; j++) {
+      if(pattern.raw[i + j * pattern.width] === 'O')
+        addPoint(i0 + i - di, j0 + j - dj)
+    }
+  }
 }
 
 /*
@@ -143,14 +164,6 @@ function clearScreen(ctx) {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.closePath();
-}
-
-function gridToContextX(i, ctx) { 
-  return (i * WCELL + game.position.x) * game.scale + ctx.canvas.width/2;
-}
-
-function gridToContextY(j, ctx) {
-  return (j * WCELL + game.position.y) * game.scale + ctx.canvas.height/2;
 }
 
 function renderCells(game, controls, grid, ctx) {
@@ -171,8 +184,7 @@ function drawLiveCells(grid, ctx) {
   for(let i = 0; i < MAX_GRID_HEIGHT; i++) {
     for(let j = 0; j < MAX_GRID_WIDTH; j++) {
 
-      let cellX = gridToContextX(i, ctx);
-      let cellY = gridToContextY(j, ctx);
+      let [cellX, cellY] = gridToContext(i, j, ctx);
 
       if(grid[i][j])
         drawQuad(cellX, cellY, game.scale, ctx);
@@ -185,8 +197,9 @@ function drawLiveCells(grid, ctx) {
 
 function drawQuadShadow(ctx) {
   const scale = game.scale;
-  let cellX = gridToContextX(game.mouse.position.i, ctx);
-  let cellY = gridToContextY(game.mouse.position.j, ctx);
+  let i = game.mouse.position.i;
+  let j = game.mouse.position.j;
+  let [cellX, cellY] = gridToContext(i, j, ctx);
   drawQuad(cellX, cellY, scale, ctx, '#3333');  
 }
 
@@ -200,8 +213,9 @@ function drawPatternShadow(ctx) {
     for(let i = 0; i < pattern.width; i++) {
       for(let j = 0; j < pattern.height; j++) {
         if(pattern.raw[i + j * pattern.width] === 'O') {
-          let cellX = gridToContextX(game.mouse.position.i + i - di, ctx);
-          let cellY = gridToContextY(game.mouse.position.j + j - dj, ctx);
+          let gridI = game.mouse.position.i + i - di;
+          let gridJ = game.mouse.position.j + j - dj;
+          let [cellX, cellY] = gridToContext(gridI, gridJ, ctx);
           drawQuad(cellX, cellY, game.scale, ctx, '#3333');
         }
       }
