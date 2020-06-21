@@ -12,7 +12,7 @@ const allReducers = combineReducers({
 export const controls = createStore(allReducers);
 
 export const game = {
-  scale: 2, 
+  scale: 1, 
   position: {
     x: 0, 
     y: 0
