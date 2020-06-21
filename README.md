@@ -7,4 +7,6 @@ The patterns was taken from [this website](https://web.archive.org/web/201603250
 ### Preview
 
 If you want to preview click [here](https://viniciusrplima.github.io/game-of-life/).<br>
-![Game of Life](https://github.com/viniciusrplima/game-of-life/blob/master/screenshot.png)
+<p align="center">
+  <img width="600" src="./screenshot.png" alt="Game of Life Screenshot">
+</p>
