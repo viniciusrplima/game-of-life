@@ -7,13 +7,17 @@ export default function PatternImage({ width, height, pattern }) {
 
   useEffect(() => {
     const ctx = canvas.current.getContext('2d');
+
+    clearContext(ctx);
+    drawPattern(ctx);
+  })
+
+  const clearContext = ctx => {
     ctx.beginPath();
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.closePath();
-    drawPattern(ctx);
-    console.log('.');
-  })
+  }
 
   const drawPattern = ctx => {
     const wCell = Math.min(width, height) / Math.max(pattern.width, pattern.height);
