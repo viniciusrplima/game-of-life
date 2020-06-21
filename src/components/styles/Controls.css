@@ -1,0 +1,6 @@
+
+.Controls {
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+}

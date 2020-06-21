@@ -1,0 +1,23 @@
+
+.ControlsHeader {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: #a6b1e1;
+  width: 100%;
+  box-sizing: border-box;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  cursor: pointer;
+}
+
+.ControlsHeader .ButtonSet {
+  display: grid;
+  align-items: center;
+  justify-content: space-around;
+  grid-template-columns: auto auto auto auto auto;
+  grid-gap: 20px;
+  
+}
+
+
