@@ -4,8 +4,8 @@ import { controls, game } from '../state/state';
 
 const WCELL = 5;
 const FPS = 60;
-const MAX_GRID_WIDTH = 100;
-const MAX_GRID_HEIGHT = 100;
+const MAX_GRID_LINES = 150;
+const MAX_GRID_COLUMNS = 150;
 
 // Function to add point to grid
 let addPoint = null;
@@ -18,8 +18,8 @@ export default function initGame() {
   const auxGrid = [];
 
   addPoint = (i, j, s = true) => {
-    if(i > 0 && i < MAX_GRID_HEIGHT && 
-       j > 0 && MAX_GRID_WIDTH)
+    if(i > 0 && i < MAX_GRID_COLUMNS && 
+       j > 0 && MAX_GRID_LINES)
       cellGrid[i][j] = s;
   }
 
@@ -27,8 +27,8 @@ export default function initGame() {
   initGrid(auxGrid);
 
   // Initial position
-  game.position.x = -WCELL * MAX_GRID_WIDTH / 2;
-  game.position.y = -WCELL * MAX_GRID_HEIGHT / 2;
+  game.position.x = -WCELL * MAX_GRID_COLUMNS / 2;
+  game.position.y = -WCELL * MAX_GRID_LINES / 2;
 
   document.addEventListener('keypress', handleKeyboard);
   screen.addEventListener('mousedown', handleMouse);
@@ -181,15 +181,15 @@ function renderCells(game, controls, grid, ctx) {
 }
 
 function drawLiveCells(grid, ctx) {
-  for(let i = 0; i < MAX_GRID_HEIGHT; i++) {
-    for(let j = 0; j < MAX_GRID_WIDTH; j++) {
+  for(let i = 0; i < MAX_GRID_COLUMNS; i++) {
+    for(let j = 0; j < MAX_GRID_LINES; j++) {
 
       let [cellX, cellY] = gridToContext(i, j, ctx);
 
       if(grid[i][j])
         drawQuad(cellX, cellY, game.scale, ctx);
 
-      if(i === 0 || i === MAX_GRID_HEIGHT-1 || j === 0 || j === MAX_GRID_WIDTH-1)
+      if(i === 0 || i === MAX_GRID_COLUMNS-1 || j === 0 || j === MAX_GRID_LINES-1)
         drawQuad(cellX, cellY, game.scale, ctx, '#f333');
     }
   }
@@ -240,25 +240,25 @@ function drawQuad(x, y, scale, ctx, color = '#333e') {
  */
 
 function initGrid(grid) {
-  for(let i = 0; i < MAX_GRID_HEIGHT; i++) {
+  for(let i = 0; i < MAX_GRID_COLUMNS; i++) {
     grid.push([]);
-    for(let j = 0; j < MAX_GRID_WIDTH; j++) {
+    for(let j = 0; j < MAX_GRID_LINES; j++) {
       grid[i].push(false);
     }
   }
 }
 
 function clearGrid(grid) {
-  for(let i = 0; i < MAX_GRID_HEIGHT; i++) {
-    for(let j = 0; j < MAX_GRID_WIDTH; j++) {
+  for(let i = 0; i < MAX_GRID_COLUMNS; i++) {
+    for(let j = 0; j < MAX_GRID_LINES; j++) {
       grid[i][j] = false;
     }
   }
 }
 
 function copyGrid(grid, aux) {
-  for(let i = 0; i < MAX_GRID_HEIGHT; i++) {
-    for(let j = 0; j < MAX_GRID_WIDTH; j++) {
+  for(let i = 0; i < MAX_GRID_COLUMNS; i++) {
+    for(let j = 0; j < MAX_GRID_LINES; j++) {
       aux[i][j] = grid[i][j];
     }
   }
@@ -280,8 +280,8 @@ function countAdjacentCells(grid, i, j) {
 function updateGrid(grid, aux) {
   copyGrid(grid, aux);
 
-  for(let i = 1; i < MAX_GRID_HEIGHT-1; i++) {
-    for(let j = 1; j < MAX_GRID_WIDTH-1; j++) {
+  for(let i = 1; i < MAX_GRID_COLUMNS-1; i++) {
+    for(let j = 1; j < MAX_GRID_LINES-1; j++) {
       let cells = countAdjacentCells(aux, i, j);
       if(cells === 3) grid[i][j] = true;
       if(cells < 2 || cells > 3) grid[i][j] = false;
